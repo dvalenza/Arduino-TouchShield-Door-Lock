@@ -1,21 +1,5 @@
-/* 
- Touch Shield Example using the MPR121 touch sensor IC 
 
- by: Aaron Weiss, based on the MPR121 Keypad Example by Jim Lindblom
-     
- SparkFun Electronics
- created on: 5/12/11
- license: OSHW 1.0, http://freedomdefined.org/OSHW
- 
- Pressing a pad will print the corresponding number.
- 
- Hardware: 3.3V or 5V Arduino
 
- Notes: The Wiring library is not used for I2C, a default atmel I2C lib
-        is used. Be sure to keep the .h files with the project. 
-*/
-
-// include the atmel I2C libs
 #include "mpr121.h"
 #include "i2c.h"
 #include <Servo.h> 
@@ -40,9 +24,17 @@
 
 //interupt pin
 int irqpin = 2;  // D2
-
+//PhotoResistor Pin
+int lightPin = 0; //the analog pin the photoresistor is
+                  //connected to
+                  //the photoresistor is not calibrated to any units so
+                  //this is simply a raw sensor value (relative light)
+//LED Pin
+int ledPin = 9;   //the pin the LED is connected to
+                  //we are controlling brightness so
+                  //we use one of the PWM (pulse width
+                  // modulation pins)
 Servo myservo;
-int pos = 0;
 
 void setup()
 {
@@ -50,17 +42,11 @@ void setup()
   pinMode(irqpin, INPUT);
   digitalWrite(irqpin, HIGH);
   myservo.attach(9);
-  //configure serial out
   Serial.begin(9600);
-  //output on ADC4 (PC4, SDA)
   DDRC |= 0b00010011;
-  // Pull-ups on I2C Bus
   PORTC = 0b00110000; 
-  // initalize I2C bus. Wiring lib not used. 
   i2cInit();
-  
   delay(100);
-  // initialize mpr121
   mpr121QuickConfig();
   
   // Create and interrupt to trigger when a button
@@ -69,39 +55,18 @@ void setup()
   
   // prints 'Ready...' when you can start hitting numbers
   pinMode(13, OUTPUT);
-  pinMode(12, OUTPUT);
+  pinMode(ledPin, OUTPUT); 
   Serial.println("Ready...");
 }
 
 void loop()
 {
-
-
-}
-void blinker(){
-  for(int x = 0; x<=3; x++){    
-    on();
-    delay(1000);
-    off();
-    delay(1000);
-  }
-}        
-
-void on(){
- digitalWrite(13, HIGH);
-}
-void off(){
- digitalWrite(13, LOW);
-}
-void ony(){
- digitalWrite(12, HIGH);
-}
-void offy(){
- digitalWrite(12, LOW);
+  int lightLevel = analogRead(lightPin); 
+  lightLevel = map(lightLevel, 0, 900, 0, 255);
+  lightLevel = constrain(lightLevel, 0, 255);
+  analogWrite(ledPin, lightLevel); 
 }
 
-int pw = 123;
-int inp;
 int i = 0;
 char digits[DIGITS];
 void getNumber()
@@ -148,25 +113,25 @@ void getNumber()
       Serial.print("i4!");
       i=0;
       Serial.print("Reset!\n");
-      blinker();
+      blinker(3);
     }  
   }
 
       if(digits[0] == '1' && digits[1] == '9' && digits[2] == '8' && digits[3] == '7'){
-        blinker();
+        blinker(3);
         myservo.write(42);    
         i=0;
         Serial.print("Unlocked!");
       }
       if(digits[0] == '3' && digits[1] == '3' && digits[2] == '3' && digits[3] == '3'){
-        blinker();
+        blinker(3);
         myservo.write(140);
         i=0;
         Serial.print("Locked!");
       }
   else if (touchNumber == 2){
   if (touchstatus & (1<<SEVEN)){
-      blinker();
+      blinker(3);
       myservo.write(90);
       i=0;
   }
@@ -175,3 +140,20 @@ void getNumber()
   else
     ;
 }
+
+void blinker(int t){
+  for(int x = 0; x<=t; x++){    
+    on();
+    delay(1000);
+    off();
+    delay(1000);
+  }
+}        
+
+void on(){
+ digitalWrite(13, HIGH);
+}
+void off(){
+ digitalWrite(13, LOW);
+}
+
