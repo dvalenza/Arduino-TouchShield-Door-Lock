@@ -18,19 +18,19 @@
 #define NINE 0
 
 //extras (not used)
-#define ELE9 9
-#define ELE10 10
-#define ELE11 11
+//#define ELE9 9
+//#define ELE10 10
+//#define ELE11 11
 
 //interupt pin
 int irqpin = 2;  // D2
 //PhotoResistor Pin
-int lightPin = 0; //the analog pin the photoresistor is
+int lightPin = 3; //the analog pin the photoresistor is
                   //connected to
                   //the photoresistor is not calibrated to any units so
                   //this is simply a raw sensor value (relative light)
 //LED Pin
-int ledPin = 9;   //the pin the LED is connected to
+int ledPin = 5;   //the pin the LED is connected to
                   //we are controlling brightness so
                   //we use one of the PWM (pulse width
                   // modulation pins)
@@ -55,22 +55,20 @@ void setup()
   
   // prints 'Ready...' when you can start hitting numbers
   pinMode(13, OUTPUT);
-  pinMode(ledPin, OUTPUT); 
+  pinMode(ledPin, OUTPUT);
   Serial.println("Ready...");
 }
-
 void loop()
 {
-  int lightLevel = analogRead(lightPin); 
-  lightLevel = map(lightLevel, 0, 900, 0, 255);
-  lightLevel = constrain(lightLevel, 0, 255);
-  analogWrite(ledPin, lightLevel); 
+
+nightLight();
+delay(500);
 }
 
 int i = 0;
 char digits[DIGITS];
 void getNumber()
-{
+{ 
   int touchNumber = 0;
   uint16_t touchstatus;
   
@@ -122,6 +120,7 @@ void getNumber()
         myservo.write(42);    
         i=0;
         Serial.print("Unlocked!");
+       
       }
       if(digits[0] == '3' && digits[1] == '3' && digits[2] == '3' && digits[3] == '3'){
         blinker(3);
@@ -139,6 +138,28 @@ void getNumber()
   }
   else
     ;
+   
+}
+
+void nightLight(){
+ int lightLevel = analogRead(lightPin); //Read the
+                                        // lightlevel
+ lightLevel = map(lightLevel, 0, 900, 0, 255);
+         //adjust the value 0 to 900 to
+         //span 0 to 255
+
+
+
+ lightLevel = constrain(lightLevel, 0, 255);//make sure the
+                                           //value is betwween
+                                           //0 and 255
+                          //       Serial.print("Light Level");
+   Serial.println(lightLevel);                
+ if(lightLevel >200)
+    digitalWrite(ledPin, HIGH);
+ else
+    digitalWrite(ledPin, LOW);
+ //analogWrite(9, lightLevel);  //write the value
 }
 
 void blinker(int t){
@@ -151,9 +172,9 @@ void blinker(int t){
 }        
 
 void on(){
- digitalWrite(13, HIGH);
+ digitalWrite(13, LOW);
 }
 void off(){
- digitalWrite(13, LOW);
+ digitalWrite(13, HIGH);
 }
 
