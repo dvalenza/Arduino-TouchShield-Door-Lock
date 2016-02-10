@@ -5,6 +5,7 @@ Arduino touch shield door lock.
 This will take a 4 digit passcode and when correct, will open a servo.
 
 needs: 
+ - arduino
  - aurduino touch shield
  - servo
  - led
